@@ -1,8 +1,7 @@
 # Changelog
-## 4.0.0
-⬆️ Upgrades add-on base image to v11.1.0
-⬆️ Upgrades wget to 1.21.1-r1
-⬆️ Upgrades coreutils to 8.32-r2
+
+## 4.0.1
+⬆️ Endret kode for å rette parsing feil.
 
 
 ## 3.5.9
