@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
 # SDeSalve HomeAssistant Addon: VoIP Notifier for HomeAssistant
-# Make VoIP Calls from HomeAssistant
+# Make VoIP Calls from HomeAssistant Oppdatert
 # ==============================================================================
 
 set -e
