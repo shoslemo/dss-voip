@@ -201,28 +201,44 @@ chmod 660 /share/dss_voip/dss_*
 # listen for input
 bashio::log.green "[Info] Listening for messages via stdin service call..."
 
-# shellcheck disable=SC2162
-while read -r msg; do
-   rm -f /share/dss_voip/dss_message_tts.*
-   MAKECALL="1"
-   # parse JSON
-   bashio::log.green "[Info] Received messages ${msg}"
-   echo "[Info] Received messages '${msg}'"                >> /share/dss_voip/dss_pjsua.log
-   
-   CALL_DURATION="$(echo "$msg" | jq --raw-output '.call_duration | length')"
-   CALL_DURATION_VALUE=0
-   if [ "$CALL_DURATION" -gt "0" ]; then
-      CALL_DURATION_VALUE="$(echo "$msg" | jq --raw-output '.call_duration')"
-      bashio::log.yellow "CALL_DURATION = '$CALL_DURATION_VALUE'"
-   fi
+--- run.txt.orig
++++ run.txt.patched
+@@ -268,10 +268,14 @@
+ # shellcheck disable=SC2162
+ while read -r msg; do
+    rm -f /share/dss_voip/dss_message_tts.*
+-   MAKECALL="1"
+-   # parse JSON
+-   bashio::log.green "[Info] Received messages ${msg}"
+-   echo "[Info] Received messages '${msg}'"                >> /share/dss_voip/dss_pjsua.log
++   MAKECALL="1"
++   # strip bort alt før første { slik at vi får ren JSON
++   JSON_ONLY=$(echo "$msg" | sed -n 's/.*\({.*}\).*/\1/p')
++
++   # logg både original og renset input
++   bashio::log.green "[Info] Received raw: ${msg}"
++   bashio::log.green "[Info] Parsed JSON: ${JSON_ONLY}"
++   echo "[Info] Parsed JSON '${JSON_ONLY}'"                >> /share/dss_voip/dss_pjsua.log
+ 
+-   CALL_DURATION="$(echo "$msg" | jq --raw-output '.call_duration | length')"
++   CALL_DURATION="$(echo "$JSON_ONLY" | jq --raw-output '.call_duration | length')"
+    CALL_DURATION_VALUE=0
+-   if [ "$CALL_DURATION" -gt "0" ]; then
+-      CALL_DURATION_VALUE="$(echo "$msg" | jq --raw-output '.call_duration')"
++   if [ "$CALL_DURATION" -gt "0" ]; then
++      CALL_DURATION_VALUE="$(echo "$JSON_ONLY" | jq --raw-output '.call_duration')"
+       bashio::log.yellow "CALL_DURATION = '$CALL_DURATION_VALUE'"
+    fi
+ 
+-   CALL_SIP_URI="$(echo "$msg" | jq --raw-output '.call_sip_uri | length')"
++   CALL_SIP_URI="$(echo "$JSON_ONLY" | jq --raw-output '.call_sip_uri | length')"
+    if [ "$CALL_SIP_URI" -gt "0" ]; then
+-      CALL_SIP_URI_VALUE="$(echo "$msg" | jq --raw-output '.call_sip_uri')"
++      CALL_SIP_URI_VALUE="$(echo "$JSON_ONLY" | jq --raw-output '.call_sip_uri')"
+       echo "CALL_SIP_URI_VALUE = '$CALL_SIP_URI_VALUE'"    >> /share/dss_voip/dss_pjsua.log
+    else
+       MAKECALL="0"
 
-   CALL_SIP_URI="$(echo "$msg" | jq --raw-output '.call_sip_uri | length')"
-   if [ "$CALL_SIP_URI" -gt "0" ]; then
-      CALL_SIP_URI_VALUE="$(echo "$msg" | jq --raw-output '.call_sip_uri')"
-      # bashio::log.info '[Debug] CALL_SIP_URI_VALUE = '$CALL_SIP_URI_VALUE 
-      echo "CALL_SIP_URI_VALUE = '$CALL_SIP_URI_VALUE'"    >> /share/dss_voip/dss_pjsua.log
-   else
-      MAKECALL="0"
       bashio::log.red \
         '-----------------------------------------------------------'
       bashio::log.red '                Oops! Something went wrong.'
