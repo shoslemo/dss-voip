@@ -201,7 +201,6 @@ chmod 660 /share/dss_voip/dss_*
 # listen for input
 bashio::log.green "[Info] Listening for messages via stdin service call..."
 
-@@ -268,10 +268,14 @@
  # shellcheck disable=SC2162
  while read -r msg; do
     rm -f /share/dss_voip/dss_message_tts.*
